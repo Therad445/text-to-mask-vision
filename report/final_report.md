@@ -254,6 +254,26 @@ The tested prompts were:
 
 The batch gallery generated five result images and a CSV table with detections, scores, and notes.
 
+### 7.4 Visual Results
+
+The following figures show representative outputs of the implemented text-to-mask pipeline.
+
+**Local Streamlit demo.** The application accepts an uploaded image, a text prompt, and threshold settings, then displays the segmentation result and detections table.
+
+![Local Streamlit demo result](figures/streamlit_demo_result.png)
+
+**Crowded bears case.** This example demonstrates a difficult crowded scene with overlapping animal instances. It is useful for error analysis because some boxes and masks overlap.
+
+![Crowded bears result](figures/gallery/01_crowded_bears.png)
+
+**Multi-object prompt case.** The prompt `bus . person .` demonstrates that the system can process multiple open-vocabulary categories in a single image.
+
+![Bus and person multi-object result](figures/gallery/03_bus_person_multi_object.png)
+
+**Weak prompt case.** The prompt `small animal .` on a bus image illustrates prompt mismatch and open-vocabulary sensitivity.
+
+![Weak prompt case](figures/gallery/05_weak_prompt_case.png)
+
 ## 8. Results
 
 The project successfully demonstrates an end-to-end open-vocabulary text-to-mask pipeline.
