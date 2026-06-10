@@ -1,0 +1,26 @@
+classes:
+
+* person
+* dog
+* cat
+* car
+* bottle
+* chair
+* bicycle
+* bus
+
+prompt_templates:
+
+* "{class_name}"
+* "a {class_name}"
+* "a photo of a {class_name}"
+  EOF
+
+cat > configs/thresholds.yaml <<'EOF'
+default:
+box_threshold: 0.30
+text_threshold: 0.25
+
+sweep:
+box_thresholds: [0.20, 0.30, 0.40, 0.50]
+text_thresholds: [0.20, 0.25, 0.30]

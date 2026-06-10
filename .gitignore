@@ -1,0 +1,44 @@
+
+# Python
+
+**pycache**/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+
+.venv/
+venv/
+env/
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# OS / IDE
+
+.DS_Store
+.idea/
+.vscode/
+
+# Model weights
+
+*.pth
+*.pt
+*.ckpt
+weights/
+
+# Outputs
+
+outputs/predictions/*
+outputs/error_examples/*
+outputs/logs/*
+!outputs/predictions/.gitkeep
+!outputs/error_examples/.gitkeep
+!outputs/logs/.gitkeep
+
+# Demo data
+
+data/demo_images/*
+!data/demo_images/.gitkeep
