@@ -42,7 +42,7 @@ fi
 
 echo "Checking for unfinished placeholder code..."
 
-if grep -R --exclude='*.pdf' "NotImplementedError" -n src scripts notebooks README.md report presentation; then
+if grep -R --exclude='*.pdf' --exclude='check_project.sh' "NotImplementedError" -n src scripts notebooks README.md report presentation; then
   echo "Found unfinished placeholder code."
   exit 1
 fi

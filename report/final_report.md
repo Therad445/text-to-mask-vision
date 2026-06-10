@@ -48,6 +48,19 @@ The project focuses on:
 
 This is an inference-based project. It does not train a new model from scratch. Instead, it studies how pretrained foundation models can be combined into a practical computer vision application.
 
+## 3.1 Review of Existing Solutions and Model Choice
+
+Several existing approaches can be used for object detection and segmentation.
+
+| Approach | Strengths | Limitations | Relevance to this project |
+|---|---|---|---|
+| Fixed-class detectors such as YOLO, Faster R-CNN, DETR | Fast and reliable for predefined categories | Require a fixed label set and often need retraining for new concepts | Not flexible enough for arbitrary text prompts |
+| CLIP-based retrieval or classification | Strong image-text matching | Does not directly provide accurate object boxes or masks | Useful for semantic matching, but insufficient for this pipeline alone |
+| OWL-ViT + SAM | Supports open-vocabulary detection and can be combined with SAM | Detection quality depends on prompt wording and image complexity | A reasonable alternative baseline for future comparison |
+| Grounding DINO + SAM | Provides text-conditioned boxes and high-quality box-guided masks | Computationally heavy and sensitive to crowded scenes | Selected as the main approach because it directly matches the text-to-mask goal |
+
+The final design uses Grounding DINO for open-vocabulary localization and SAM for mask generation. This choice is practical because it avoids training a new model from scratch while still supporting user-defined text prompts.
+
 ## 4. Method
 
 The pipeline consists of four main stages.
@@ -262,15 +275,15 @@ The following figures show representative outputs of the implemented text-to-mas
 
 ![Local Streamlit demo result](figures/streamlit_demo_result.png)
 
-**Crowded bears case.** This example demonstrates a difficult crowded scene with overlapping animal instances. It is useful for error analysis because some boxes and masks overlap.
+**Crowded bears case.** This example demonstrates a difficult crowded scene with overlapping animal instances. It is useful for error analysis because some boxes and masks overlap, and not all visually present bears are perfectly separated after NMS.
 
 ![Crowded bears result](figures/gallery/01_crowded_bears.png)
 
-**Multi-object prompt case.** The prompt `bus . person .` demonstrates that the system can process multiple open-vocabulary categories in a single image.
+**Multi-object prompt case.** The prompt `bus . person .` demonstrates that the system can process multiple open-vocabulary categories in a single image. This figure intentionally uses the same input image as the weak prompt case below, so that prompt sensitivity can be compared while keeping the image fixed.
 
 ![Bus and person multi-object result](figures/gallery/03_bus_person_multi_object.png)
 
-**Weak prompt case.** The prompt `small animal .` on a bus image illustrates prompt mismatch and open-vocabulary sensitivity.
+**Weak prompt case.** The prompt `small animal .` intentionally uses the same bus image as the multi-object case. The resulting detections show that a mismatched prompt can produce semantically incorrect or less meaningful detections even when SAM still generates masks for the detected boxes.
 
 ![Weak prompt case](figures/gallery/05_weak_prompt_case.png)
 
@@ -292,6 +305,22 @@ bus . person .
 ```
 
 In these cases, the detector can identify multiple object categories and SAM can generate masks for the detected boxes.
+
+### 8.1 Quantitative Proxy Summary
+
+Because the project is a practical inference-based prototype rather than a supervised benchmark study, evaluation is based on qualitative examples and proxy metrics extracted from the batch gallery experiment.
+
+| Case | Raw detections | After NMS | Mean box score | Mean mask score | Interpretation |
+|---|---:|---:|---:|---:|---|
+| `01_crowded_bears` | 8 | 4 | 0.438 | 0.951 | Crowded scene; NMS reduces duplicate/overlapping detections. |
+| `02_bear_cub_prompt` | 5 | 4 | 0.425 | 0.958 | Same image with a more specific prompt; useful for prompt sensitivity. |
+| `03_bus_person_multi_object` | 5 | 5 | 0.709 | 0.962 | Successful multi-object prompt with bus and person categories. |
+| `04_person_clear_case` | 2 | 2 | 0.654 | 0.987 | Clear simple case with stable person detections. |
+| `05_weak_prompt_case` | 5 | 5 | 0.286 | 0.961 | Mismatched prompt; lower box scores show semantic uncertainty. |
+
+The weak prompt case intentionally uses the same bus image as the multi-object prompt case. This creates a controlled comparison: the image remains fixed, while the text prompt changes from a semantically correct prompt (`bus . person .`) to a mismatched prompt (`small animal .`). The lower mean box confidence in the weak prompt case supports the prompt-sensitivity analysis.
+
+The crowded bears case is also intentionally included as a limitation example. Not all visually present bear instances are perfectly separated, because small nearby objects overlap strongly and can be suppressed by NMS or by the maximum detection limit.
 
 ## 9. Error Analysis
 
