@@ -16,6 +16,7 @@ required_paths=(
   "report/experiments/02_streamlit_local_demo.md"
   "report/experiments/03_gallery_results.csv"
   "report/experiments/03_gallery_summary.md"
+  "report/experiments/04_evaluation_summary.md"
   "report/figures/streamlit_demo_result.png"
   "report/figures/streamlit_detections_table.png"
   "report/figures/sanity_text_to_mask_hf.png"
