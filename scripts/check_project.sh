@@ -24,6 +24,9 @@ required_paths=(
   "report/figures/gallery/03_bus_person_multi_object.png"
   "report/figures/gallery/05_weak_prompt_case.png"
   "presentation/slides.md"
+  "presentation/text_to_mask_vision_final_presentation.pdf"
+  "presentation/text_to_mask_vision_final_presentation.pptx"
+  "presentation/speaker_notes_ru.md"
   "scripts/download_sam_weights.sh"
 )
 
