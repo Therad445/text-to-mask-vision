@@ -44,6 +44,16 @@ if git ls-files | grep -E '(^\.venv/|^weights/|\.pth$|\.zip$|__pycache__|\.pyc$)
   exit 1
 fi
 
+
+echo "Checking Python syntax..."
+python3 -m py_compile app.py src/*.py scripts/*.py
+
+echo "Checking config files for accidental shell/markdown artifacts..."
+if grep -R -nE 'from \*\*future\*\*|```|cat >|<<'\''EOF'\''|^EOF$' src scripts configs README.md report/experiments presentation/*.md 2>/dev/null; then
+  echo "Found accidental shell/markdown artifacts in source files."
+  exit 1
+fi
+
 echo "Checking for unfinished placeholder code..."
 
 if grep -R --exclude='*.pdf' --exclude='check_project.sh' "NotImplementedError" -n src scripts notebooks README.md report presentation; then

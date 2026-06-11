@@ -1,26 +1,37 @@
-classes:
+# Prompt presets used in the qualitative gallery experiments.
 
-* person
-* dog
-* cat
-* car
-* bottle
-* chair
-* bicycle
-* bus
+prompts:
+  crowded_bears:
+    prompt: "bear ."
+    purpose: "crowded scene / error analysis"
 
-prompt_templates:
+  bear_cub_prompt:
+    prompt: "bear cub ."
+    purpose: "prompt sensitivity on the same bear image"
 
-* "{class_name}"
-* "a {class_name}"
-* "a photo of a {class_name}"
-  EOF
+  bus_person_multi_object:
+    prompt: "bus . person ."
+    purpose: "multi-object open-vocabulary detection"
 
-cat > configs/thresholds.yaml <<'EOF'
-default:
-box_threshold: 0.30
-text_threshold: 0.25
+  person_clear_case:
+    prompt: "person ."
+    purpose: "simple success case"
 
-sweep:
-box_thresholds: [0.20, 0.30, 0.40, 0.50]
-text_thresholds: [0.20, 0.25, 0.30]
+  weak_prompt_case:
+    prompt: "small animal ."
+    purpose: "mismatched prompt / limitation case"
+
+default_thresholds:
+  box_threshold: 0.25
+  text_threshold: 0.25
+  nms_iou_threshold: 0.45
+  max_detections: 4
+
+final_gallery_overrides:
+  crowded_bears:
+    box_threshold: 0.25
+    text_threshold: 0.30
+    nms_iou_threshold: 0.35
+    max_detections: 8
+    final_detections: 5
+    note: "Final tuned setting used in report and presentation."

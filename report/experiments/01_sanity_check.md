@@ -135,3 +135,4 @@ src/visualization.py
 
 After that, the pipeline can be connected to the Streamlit application.
 
+Note: this file documents an initial sanity/demo run. The final tuned crowded-bears setting is reported in `03_gallery_results.csv`, `04_evaluation_summary.md`, the final report, and the presentation.

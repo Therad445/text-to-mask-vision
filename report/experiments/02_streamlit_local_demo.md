@@ -38,3 +38,5 @@ The model is computationally heavy for CPU-only inference, so Google Colab GPU r
 ## Limitation
 
 The bear image is a crowded scene with several overlapping instances. As a result, some masks overlap and one instance is only partially segmented. This case is useful for error analysis.
+
+Note: this file documents an initial sanity/demo run. The final tuned crowded-bears setting is reported in `03_gallery_results.csv`, `04_evaluation_summary.md`, the final report, and the presentation.

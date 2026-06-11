@@ -22,7 +22,7 @@ The project includes:
 * qualitative gallery of success and failure cases;
 * CSV experiment logs;
 * final PDF report;
-* presentation draft;
+* final presentation;
 * error analysis and future work.
 
 ## Project Goal
