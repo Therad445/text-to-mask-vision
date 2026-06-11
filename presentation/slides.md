@@ -1,151 +1,83 @@
 # Text-to-Mask Vision
 
-## Open-Vocabulary Object Detection and Segmentation with Grounding DINO and SAM
+Open-vocabulary object detection and segmentation with Grounding DINO + SAM
 
-**Author:** Radmir Islamov  
-**Course:** Computer Vision Final Project  
-**Repository:** `github.com/Therad445/text-to-mask-vision`
+Radmir Islamov  
+Computer Vision Final Project  
+github.com/Therad445/text-to-mask-vision
 
 ---
 
-# 1. Project Idea
+# 1. Why this project matters
 
-The project implements a practical text-to-mask computer vision pipeline:
+Classical detectors are usually fixed-class systems.
+
+Text-to-mask pipeline:
 
 ```text
 image + text prompt -> bounding boxes -> segmentation masks
 ```
 
-The user uploads an image and writes a prompt such as:
+Use cases:
 
-```text
-bear .
-person .
-bus . person .
-```
-
-The system detects objects matching the prompt and converts detections into segmentation masks.
-
----
-
-# 2. Problem Statement
-
-Classical object detectors usually work with a fixed set of classes.
-
-This project explores a more flexible setting:
-
-- the user describes the target object in natural language;
-- the detector finds matching regions;
-- the segmentation model produces pixel-level masks;
-- no additional training is required.
-
-Potential use cases:
-
-- interactive image annotation;
-- visual search;
+- interactive annotation;
 - dataset labeling;
-- rapid prototyping of CV pipelines.
+- visual search;
+- rapid prototyping.
 
 ---
 
-# 3. Main Models
-
-The project combines two pretrained vision foundation models.
-
-## Grounding DINO
-
-Used for open-vocabulary object detection.
-
-Input:
+# 2. End-to-end pipeline
 
 ```text
-image + text prompt
+Input image + text prompt
+        -> prompt normalization
+        -> Grounding DINO detection
+        -> NMS post-processing
+        -> SAM box-guided segmentation
+        -> visualization + detections table
 ```
 
-Output:
-
-```text
-boxes + scores + labels
-```
-
-## Segment Anything Model
-
-Used for box-guided segmentation.
-
-Input:
-
-```text
-image + selected boxes
-```
-
-Output:
-
-```text
-segmentation masks + mask scores
-```
+Key idea: Grounding DINO localizes; SAM segments selected boxes.
 
 ---
 
-# 4. Pipeline Architecture
+# 3. Models used
 
-```text
-Input image
-    |
-    v
-Text prompt normalization
-    |
-    v
-Grounding DINO detection
-    |
-    v
-Non-Maximum Suppression
-    |
-    v
-SAM box-to-mask segmentation
-    |
-    v
-Visualization + detections table
-```
+**Grounding DINO**
 
-Default parameters:
+- open-vocabulary object detection;
+- input: image + text prompt;
+- output: boxes, scores, labels.
 
-- box threshold: `0.25`;
-- text threshold: `0.25`;
-- NMS IoU threshold: `0.45`;
-- max detections: configurable.
+**SAM**
+
+- box-guided segmentation;
+- input: image + selected boxes;
+- output: masks and mask scores.
+
+No training from scratch is performed.
 
 ---
 
-# 5. Implementation
-
-The project contains both notebook experiments and an interactive demo.
+# 4. Implementation and repository
 
 Main files:
 
-```text
-src/text_to_mask_pipeline.py
-app.py
-notebooks/02_colab_hf_grounding_dino_sam_sanity_check.ipynb
-notebooks/03_colab_batch_gallery.ipynb
-report/experiments/
-report/figures/
-```
+- `src/text_to_mask_pipeline.py`
+- `app.py`
+- `notebooks/02_colab_hf_grounding_dino_sam_sanity_check.ipynb`
+- `notebooks/03_colab_batch_gallery.ipynb`
+- `report/final_report.pdf`
+- `scripts/check_project.sh`
 
-The reusable pipeline module implements:
-
-- model loading;
-- detection;
-- NMS filtering;
-- SAM segmentation;
-- end-to-end inference.
+Large checkpoints are not stored in Git.
 
 ---
 
-# 6. Streamlit Demo
+# 5. Interactive demo
 
-The project includes a local Streamlit interface.
-
-The demo supports:
+Streamlit demo supports:
 
 - image upload;
 - text prompt input;
@@ -153,140 +85,140 @@ The demo supports:
 - NMS IoU threshold control;
 - maximum detections control;
 - result visualization;
-- detections table with scores and coordinates.
+- detections table.
 
-Example command:
+Run:
 
 ```bash
 python -m streamlit run app.py
 ```
 
-![Streamlit demo](../report/figures/streamlit_demo_result.png)
+---
+
+# 6. Experiment design
+
+Three experiment blocks:
+
+1. sanity check;
+2. local Streamlit demo;
+3. batch gallery.
+
+Batch gallery cases:
+
+- crowded bears;
+- bear cub prompt;
+- bus/person multi-object prompt;
+- clear person case;
+- weak prompt case.
 
 ---
 
-# 7. Experiments
-
-Three experiment blocks were prepared.
-
-## Experiment 01 — Sanity Check
-
-Goal: verify that the full pipeline works end-to-end.
+# 7. Success case: multi-object prompt
 
 Prompt:
 
 ```text
-bear .
+bus . person .
 ```
 
-Result:
+Observations:
+
+- bus detected with high confidence;
+- several person instances detected;
+- SAM produces masks from selected boxes;
+- good example of open-vocabulary control.
+
+---
+
+# 8. Prompt sensitivity
+
+Controlled comparison:
+
+- same image;
+- different prompts.
+
+Correct prompt:
 
 ```text
-image -> Grounding DINO -> NMS -> SAM -> visualization
+bus . person .
 ```
 
-## Experiment 02 — Local Demo
+Weak prompt:
 
-Goal: verify that the pipeline works through Streamlit.
+```text
+small animal .
+```
 
-## Experiment 03 — Batch Gallery
-
-Goal: test several success and failure cases.
-
----
-
-# 8. Batch Gallery
-
-The batch gallery was run in Google Colab with a Tesla T4 GPU.
-
-Test cases:
-
-| Case | Prompt | Purpose |
-|---|---|---|
-| Crowded bears | `bear .` | crowded scene / error analysis |
-| Bear cub prompt | `bear cub .` | prompt sensitivity |
-| Bus and people | `bus . person .` | multi-object prompt |
-| Clear person | `person .` | simple success case |
-| Weak prompt | `small animal .` | mismatched prompt |
-
-Outputs:
-
-- 5 result images;
-- CSV table with scores;
-- markdown summary.
+The weak prompt produces lower-confidence and semantically wrong detections.
 
 ---
 
-# 9. Qualitative Results
+# 9. Crowded bears
 
-The strongest results are obtained when:
+Final tuned setting:
 
-- the object is clearly visible;
-- the prompt is simple and specific;
-- objects are not heavily occluded;
-- the image contains common object categories.
+```text
+prompt = bear .
+box threshold = 0.25
+text threshold = 0.30
+NMS IoU = 0.35
+max detections = 8
+final detections = 5
+```
 
-Example result:
+Metrics:
 
-![Batch gallery example](../report/figures/gallery/03_bus_person_multi_object.png)
+```text
+mean box score = 0.399
+mean mask score = 0.971
+```
 
-The system successfully demonstrates open-vocabulary detection followed by segmentation.
-
----
-
-# 10. Error Analysis
-
-Observed limitations:
-
-- Grounding DINO may produce overlapping boxes;
-- crowded scenes are difficult;
-- NMS can remove valid nearby objects;
-- inaccurate boxes can lead to partial SAM masks;
-- prompt wording affects results;
-- CPU inference is slow.
-
-The bear example is useful because it is both a working demo and a failure-analysis case.
-
-![Crowded bears](../report/figures/gallery/01_crowded_bears.png)
+Interpretation: the main bottleneck is detection/localization in crowded scenes.
 
 ---
 
-# 11. Individual Contribution
+# 10. Proxy metrics summary
 
-This is an individual practical project.
+Evaluation uses qualitative inspection and proxy metrics:
+
+- raw detections;
+- detections after NMS;
+- mean box score;
+- mean mask score;
+- visual inspection.
+
+A labeled benchmark with IoU/mAP is future work.
+
+---
+
+# 11. Individual contribution
 
 Implemented and prepared:
 
-- repository structure;
 - reusable text-to-mask pipeline;
+- Streamlit demo;
+- NMS post-processing;
 - Colab sanity notebook;
 - batch gallery notebook;
-- Streamlit demo;
-- experiment logs;
-- visual results;
-- final report draft;
-- README and usage instructions.
-
-Large pretrained checkpoints are not stored in Git and are downloaded separately.
+- experiment logs and visual results;
+- final report and presentation.
 
 ---
 
 # 12. Conclusion
 
-The project implements a working text-to-mask computer vision system.
-
-Final result:
+The project implements a working text-to-mask CV system:
 
 ```text
 image + text prompt -> open-vocabulary boxes -> masks -> interactive demo
 ```
 
-The project demonstrates how modern pretrained foundation models can be combined into a practical CV application without training a new model.
+The system is useful for interactive annotation, visual search and rapid prototyping.
 
 Future work:
 
-- more test images;
-- latency measurements;
-- comparison with OWL-ViT;
-- mask export as COCO/PNG;
+- labeled benchmark;
+- OWL-ViT comparison;
+- latency measurement;
+- mask export;
 - GPU deployment.
