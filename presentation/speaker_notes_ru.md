@@ -1,40 +1,169 @@
 # Speaker notes — human defense version
 
-## 1. Title
-Я представляю Text-to-Mask Vision — систему, которая по изображению и текстовому prompt строит boxes и masks.
+Ориентир по времени: около 5 минут.  
+Темп: спокойно, без чтения слово в слово. На каждом слайде нужно сказать 2–4 ключевые фразы.
 
-## 2. Карта защиты
-Сначала объясню проблему фиксированных классов, потом архитектуру, реализацию, эксперименты и ограничения.
+---
 
-## 3. Зачем нужен проект
-Обычные detectors ограничены заранее заданными классами. Мне было интересно проверить, можно ли сделать более интерактивный pipeline через natural-language prompt.
+## 1. Титульный слайд — 15–20 секунд
 
-## 4. Что я проверял
-Это не проект про обучение новой модели с нуля. Цель — собрать practical application из pretrained foundation models и понять, где оно работает, а где ломается.
+Я представляю проект Text-to-Mask Vision.  
+Идея проекта простая: пользователь загружает изображение, пишет текстовый prompt, а система находит соответствующие объекты и строит для них маски.
 
-## 5. Архитектура
-Grounding DINO отвечает за localization: boxes and scores. Потом NMS убирает дубли. SAM получает boxes и строит masks. Поэтому главный bottleneck — качество detection/localization.
+Технически это pipeline:
 
-## 6. Реализация
-Я вынес core logic в `src/text_to_mask_pipeline.py`, сделал Streamlit demo, Colab sanity check, batch gallery, CSV results, report, presentation и `check_project.sh`.
+изображение + текстовый запрос → bounding boxes → NMS → segmentation masks → визуализация и таблица результатов.
 
-## 7. Demo
-Demo позволяет загрузить image, ввести prompt и менять thresholds. Финальные default values выставлены под crowded-bears defense preset: box 0.25, text 0.30, NMS 0.35, max 8.
+В проекте я использую связку Grounding DINO и Segment Anything Model, то есть современные pretrained vision foundation models.
 
-## 8. Эксперименты
-Я взял 5 кейсов: успешный multi-object prompt, простой person case, prompt sensitivity и crowded bears как сложный failure-analysis.
+---
 
-## 9. Success case
-`bus . person .` — хороший пример: prompt совпадает с объектами, mean box score высокий, masks стабильные.
+## 2. Карта защиты — 15–20 секунд
 
-## 10. Prompt sensitivity
-Я специально использую одну и ту же bus image для правильного и неправильного prompt. Так видно, что open-vocabulary модели гибкие, но чувствительны к формулировке.
+Я построю защиту в пять шагов.  
+Сначала объясню, почему fixed-class detection не всегда удобен. Потом покажу архитектуру pipeline. После этого — что именно реализовано в коде и demo. Затем разберу эксперименты и отдельно остановлюсь на сложном crowded-bears кейсе. В конце честно покажу ограничения и возможные улучшения.
 
-## 11. Crowded bears
-Это главный сложный пример. На картинке 5 видимых медведей. Я подобрал параметры так, чтобы получить 5 final detections без ложного шестого объекта. Box score 0.399 умеренный из-за overlap, mask score 0.971 высокий, потому что SAM хорошо сегментирует выбранные boxes.
+Главная мысль: это не просто notebook с запуском модели, а воспроизводимое practical-приложение.
 
-## 12. Что получилось
-Получилось собрать рабочий reproducible pipeline и показать успехи и ограничения. Ограничения честные: нет labeled benchmark, crowded scenes сложны, prompt влияет на результат, latency/GPU deployment можно улучшать.
+---
 
-## 13. Финал
-Главная мысль: проект показывает границу между красивым demo foundation models и реальной инженерной надёжностью.
+## 3. Зачем нужен проект — 25–30 секунд
+
+Обычные object detectors хорошо работают, когда список классов заранее известен. Например, модель умеет находить классы из COCO: person, car, bus и так далее.
+
+Но в практических задачах часто хочется спросить модель свободнее: “bear cub”, “small animal”, “person near bus”, “object like this”. Для каждого нового понятия не хочется собирать датасет и дообучать detector.
+
+Поэтому мне было интересно проверить open-vocabulary подход: можно ли по текстовому prompt быстро получить не только boxes, но и segmentation masks.
+
+---
+
+## 4. Что именно я проверял — 25–30 секунд
+
+Важный момент: это не проект про обучение новой модели с нуля.  
+Я сознательно выбрал другой фокус: собрать practical pipeline из pretrained foundation models и понять, насколько он удобен как инженерный инструмент.
+
+То есть меня интересовали три вопроса:
+
+первый — работает ли система end-to-end;  
+второй — можно ли сделать интерактивное demo;  
+третий — где pipeline начинает ошибаться и какие у него реальные ограничения.
+
+---
+
+## 5. Архитектура pipeline — 35–40 секунд
+
+Pipeline разделён на несколько шагов.
+
+Первый шаг — Grounding DINO. Он получает изображение и текстовый prompt, например `bear .`, и возвращает bounding boxes, scores и labels.
+
+Второй шаг — NMS, non-maximum suppression. Он нужен, чтобы убрать дублирующиеся boxes, потому что detector может несколько раз найти почти один и тот же объект.
+
+Третий шаг — SAM. В этой связке SAM получает не текст, а уже выбранные boxes, и строит по ним masks.
+
+Из этого следует важный вывод: главный bottleneck здесь — не всегда segmentation, а именно detection и localization. Если box выбран плохо, SAM аккуратно построит маску, но вокруг неправильной области.
+
+---
+
+## 6. Что было реализовано — 30–35 секунд
+
+Я вынес основную логику в `src/text_to_mask_pipeline.py`. Там находится reusable pipeline: загрузка моделей, detection, NMS, segmentation и подготовка результата.
+
+Кроме этого я сделал Streamlit demo в `app.py`, чтобы проект можно было использовать не только из notebook, но и как локальное web-приложение.
+
+Также есть Colab notebooks для sanity check и batch gallery, CSV с результатами, изображения для отчёта, финальный report, презентация и `check_project.sh`, который проверяет структуру проекта, Python syntax и отсутствие случайных мусорных артефактов.
+
+---
+
+## 7. Интерактивное demo — 25–30 секунд
+
+Demo позволяет загрузить изображение, ввести prompt и настроить thresholds: box threshold, text threshold, NMS IoU threshold и maximum detections.
+
+Я специально выставил final live-demo preset под crowded-bears case:
+
+box threshold 0.25,  
+text threshold 0.30,  
+NMS IoU 0.35,  
+max detections 8.
+
+Так при запуске demo можно воспроизвести главный сложный пример из защиты.
+
+---
+
+## 8. Дизайн экспериментов — 30 секунд
+
+Так как у меня нет labeled benchmark с ground truth masks, я использую practical evaluation: визуальная проверка плюс proxy metrics из pipeline.
+
+Я выбрал пять кейсов:
+
+crowded bears — сложная overlap-сцена;  
+bear cub prompt — проверка чувствительности к prompt;  
+bus . person . — успешный multi-object prompt;  
+person — простой успешный кейс;  
+small animal — слабый или семантически неверный prompt.
+
+То есть gallery специально включает не только красивые success cases, но и failure-analysis.
+
+---
+
+## 9. Success case: bus + person — 25–30 секунд
+
+На этом слайде пример, где open-vocabulary control работает хорошо.
+
+Prompt `bus . person .` совпадает с реальными объектами на изображении. Detector уверенно находит bus и несколько person instances. После NMS остаётся 5 detections.
+
+Mean box score здесь 0.709, mean mask score 0.962. Это хороший результат: localization достаточно уверенная, а SAM стабильно строит masks по выбранным boxes.
+
+---
+
+## 10. Prompt sensitivity — 30–35 секунд
+
+Здесь я хотел показать, что prompt влияет не только на confidence, но и на смысл результата.
+
+На одной и той же картинке prompt `bus . person .` даёт осмысленные detections. А prompt `small animal .` уже семантически не подходит к изображению, поэтому confidence ниже и результат менее полезный.
+
+Это не просто баг конкретной модели. Это свойство open-vocabulary систем: они дают гибкость, но часть ответственности переносится на формулировку запроса.
+
+---
+
+## 11. Crowded bears — 45–55 секунд
+
+Это главный сложный кейс в проекте.
+
+На изображении пять видимых медведей, но сцена сложная: объекты перекрываются, часть тел закрыта, boxes могут конкурировать друг с другом.
+
+Я подобрал final setting:
+
+prompt `bear .`,  
+box threshold 0.25,  
+text threshold 0.30,  
+NMS IoU 0.35,  
+max detections 8.
+
+До NMS получается 8 raw detections, после отбора — 5 final detections. Это соответствует пяти видимым медведям и не добавляет ложный шестой объект.
+
+Mean box score здесь 0.399 — он ниже, чем в bus/person case, и это ожидаемо из-за overlap-сцены. Но mean mask score 0.971 высокий. Поэтому интерпретация такая: SAM достаточно стабильно строит masks по выбранным boxes, а основная сложность находится на этапе detection/localization.
+
+---
+
+## 12. Что получилось и ограничения — 35–40 секунд
+
+В результате получился end-to-end text-to-mask pipeline, локальное Streamlit demo, воспроизводимый repo, gallery с success и failure cases, финальный отчёт и презентация.
+
+Но ограничения тоже важны.
+
+Первое — нет полноценного labeled benchmark, поэтому оценка не заменяет mAP или IoU на размеченных данных.  
+Второе — crowded scenes остаются сложными для detector.  
+Третье — результат сильно зависит от prompt.  
+Четвёртое — latency и GPU deployment можно исследовать глубже.
+
+Для учебного final project я сфокусировался на practical-интеграции и анализе поведения pretrained models.
+
+---
+
+## 13. Финал — 20–25 секунд
+
+Главный результат проекта: я собрал и проверил воспроизводимую text-to-mask систему на Grounding DINO и SAM.
+
+Для меня ценность проекта не только в красивом demo, а в том, что он показывает границу между впечатляющими foundation models и реальной инженерной надёжностью: где pipeline работает хорошо, где зависит от prompt, и где ломается на сложных crowded scenes.
+
+Спасибо, готов ответить на вопросы.
