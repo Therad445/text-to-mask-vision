@@ -192,7 +192,7 @@ The project does not use a manually labeled segmentation benchmark. Therefore, e
 
 | Case                         | Raw detections | After NMS | Mean box score | Mean mask score | Interpretation                                               |
 | ---------------------------- | -------------: | --------: | -------------: | --------------: | ------------------------------------------------------------ |
-| `01_crowded_bears`           |              8 |         4 |          0.438 |           0.951 | Crowded scene; NMS reduces duplicate/overlapping detections. |
+| `01_crowded_bears`           |              8 |         5 |          0.399 |           0.971 | Tuned crowded-scene setting; five final detections and readable visualization.     |
 | `02_bear_cub_prompt`         |              5 |         4 |          0.425 |           0.958 | More specific prompt; useful for prompt sensitivity.         |
 | `03_bus_person_multi_object` |              5 |         5 |          0.709 |           0.962 | Successful multi-object prompt.                              |
 | `04_person_clear_case`       |              2 |         2 |          0.654 |           0.987 | Clear simple case.                                           |
@@ -234,7 +234,7 @@ Observed limitations:
 * prompt wording strongly affects results;
 * weak or mismatched prompts can produce semantically incorrect detections.
 
-The crowded bears example is intentionally included as an error-analysis case. Not all bear instances are perfectly separated, because small nearby animals overlap strongly and can be suppressed during post-processing.
+The crowded bears example is intentionally included as an error-analysis case. The final setting keeps five detections for the five visible bears, but some masks remain incomplete because nearby animals overlap strongly and the pipeline relies on box-guided segmentation.
 
 The bus/person and weak prompt cases intentionally use the same image to demonstrate prompt sensitivity under controlled visual input.
 

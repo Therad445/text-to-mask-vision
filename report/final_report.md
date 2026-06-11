@@ -275,7 +275,7 @@ The following figures show representative outputs of the implemented text-to-mas
 
 ![Local Streamlit demo result](figures/streamlit_demo_result.png)
 
-**Crowded bears case.** This example demonstrates a difficult crowded scene with overlapping animal instances. It is useful for error analysis because some boxes and masks overlap, and not all visually present bears are perfectly separated after NMS.
+**Crowded bears case.** This example demonstrates a difficult crowded scene with overlapping animal instances. The final tuned setting keeps five detections for the five visible bears while preserving a readable visualization. Some masks remain slightly incomplete because the objects overlap and SAM receives box-guided prompts.
 
 ![Crowded bears result](figures/gallery/01_crowded_bears.png)
 
@@ -312,7 +312,7 @@ Because the project is a practical inference-based prototype rather than a super
 
 | Case | Raw detections | After NMS | Mean box score | Mean mask score | Interpretation |
 |---|---:|---:|---:|---:|---|
-| `01_crowded_bears` | 8 | 4 | 0.438 | 0.951 | Crowded scene; NMS reduces duplicate/overlapping detections. |
+| `01_crowded_bears` | 8 | 5 | 0.399 | 0.971 | Crowded scene; tuned setting keeps five final detections while preserving a readable visualization. |
 | `02_bear_cub_prompt` | 5 | 4 | 0.425 | 0.958 | Same image with a more specific prompt; useful for prompt sensitivity. |
 | `03_bus_person_multi_object` | 5 | 5 | 0.709 | 0.962 | Successful multi-object prompt with bus and person categories. |
 | `04_person_clear_case` | 2 | 2 | 0.654 | 0.987 | Clear simple case with stable person detections. |
@@ -320,7 +320,7 @@ Because the project is a practical inference-based prototype rather than a super
 
 The weak prompt case intentionally uses the same bus image as the multi-object prompt case. This creates a controlled comparison: the image remains fixed, while the text prompt changes from a semantically correct prompt (`bus . person .`) to a mismatched prompt (`small animal .`). The lower mean box confidence in the weak prompt case supports the prompt-sensitivity analysis.
 
-The crowded bears case is also intentionally included as a limitation example. Not all visually present bear instances are perfectly separated, because small nearby objects overlap strongly and can be suppressed by NMS or by the maximum detection limit.
+The crowded bears case is also intentionally included as a limitation example. The final tuned setting keeps five detections for the five visible bears (`box_threshold=0.25`, `text_threshold=0.30`, `nms_iou_threshold=0.35`, `max_detections=8`). Some masks remain slightly incomplete because nearby bear instances overlap strongly and the pipeline relies on box-guided segmentation.
 
 ## 9. Error Analysis
 
