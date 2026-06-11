@@ -119,7 +119,7 @@ with st.sidebar:
         "Text threshold",
         min_value=0.05,
         max_value=0.80,
-        value=0.25,
+        value=0.30,
         step=0.05,
     )
 
@@ -127,7 +127,7 @@ with st.sidebar:
         "NMS IoU threshold",
         min_value=0.10,
         max_value=0.90,
-        value=0.45,
+        value=0.35,
         step=0.05,
     )
 
@@ -135,7 +135,7 @@ with st.sidebar:
         "Max detections",
         min_value=1,
         max_value=20,
-        value=4,
+        value=8,
         step=1,
     )
 

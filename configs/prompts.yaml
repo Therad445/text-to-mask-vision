@@ -3,7 +3,7 @@
 prompts:
   crowded_bears:
     prompt: "bear ."
-    purpose: "crowded scene / error analysis"
+    purpose: "crowded scene / tuned error analysis"
 
   bear_cub_prompt:
     prompt: "bear cub ."
@@ -27,11 +27,16 @@ default_thresholds:
   nms_iou_threshold: 0.45
   max_detections: 4
 
-final_gallery_overrides:
-  crowded_bears:
-    box_threshold: 0.25
-    text_threshold: 0.30
-    nms_iou_threshold: 0.35
-    max_detections: 8
-    final_detections: 5
-    note: "Final tuned setting used in report and presentation."
+demo_preset:
+  prompt: "bear ."
+  box_threshold: 0.25
+  text_threshold: 0.30
+  nms_iou_threshold: 0.35
+  max_detections: 8
+  note: "Default live-demo preset for reproducing the final crowded-bears result."
+
+final_crowded_bears:
+  raw_detections: 8
+  final_detections: 5
+  mean_box_score: 0.399
+  mean_mask_score: 0.971

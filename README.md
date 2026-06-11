@@ -281,3 +281,17 @@ Possible improvements:
 * deploy the demo on a GPU-enabled server;
 * add mask editing tools.
 
+
+### Final live-demo preset
+
+The Streamlit demo is initialized with the same settings used for the final crowded-bears defense example.
+
+Preset values:
+
+* prompt: `bear .`
+* box_threshold: `0.25`
+* text_threshold: `0.30`
+* nms_iou_threshold: `0.35`
+* max_detections: `8`
+
+These values reproduce the final crowded-scene result used in the report and presentation. For other images, the thresholds can be adjusted directly in the sidebar.
