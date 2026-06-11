@@ -120,9 +120,9 @@ notebook = {
                     "filename": "crowded_bears.jpg",
                     "prompt": "bear .",
                     "box_threshold": 0.25,
-                    "text_threshold": 0.25,
-                    "nms_iou_threshold": 0.45,
-                    "max_detections": 4,
+                    "text_threshold": 0.30,
+                    "nms_iou_threshold": 0.35,
+                    "max_detections": 8,
                     "note": "Crowded scene with visually overlapping bear instances.",
                 },
                 {

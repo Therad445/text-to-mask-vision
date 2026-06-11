@@ -1,27 +1,16 @@
-# Experiment 03 — Result Gallery and Prompt Sensitivity
+# Experiment 03: Batch Gallery Summary
 
-## Goal
+This file summarizes the qualitative batch gallery run.
 
-This experiment evaluates the text-to-mask pipeline on several qualitative cases:
-
-- crowded scenes;
-- multi-object prompts;
-- clear object cases;
-- prompt sensitivity;
-- weak or mismatched prompts.
-
-## Results
-
-| Case | Prompt | Raw detections | After NMS | Notes |
+| Case | Prompt | Raw detections | Final detections | Note |
 |---|---|---:|---:|---|
-| 01_crowded_bears | `bear .` | 8 | 4 | Crowded scene with visually overlapping bear instances. |
-| 02_bear_cub_prompt | `bear cub .` | 5 | 4 | Prompt sensitivity case on the same image. |
-| 03_bus_person_multi_object | `bus . person .` | 5 | 5 | Multi-object prompt with a bus and people. |
-| 04_person_clear_case | `person .` | 2 | 2 | Clear person detection case. |
-| 05_weak_prompt_case | `small animal .` | 5 | 5 | Weak or mismatched prompt case. |
+| `01_crowded_bears` | `bear .` | 8 | 5 | Crowded scene with five final detections; tuned setting balances recall and visualization cleanliness. |
+| `02_bear_cub_prompt` | `bear cub .` | 5 | 4 | More specific prompt on the same bear image; useful for prompt sensitivity. |
+| `03_bus_person_multi_object` | `bus . person .` | 5 | 5 | Multi-object prompt with bus and person detections. |
+| `04_person_clear_case` | `person .` | 2 | 2 | Simple clear person case. |
+| `05_weak_prompt_case` | `small animal .` | 5 | 5 | Mismatched prompt; useful as a limitation example. |
 
-## Observation
+The crowded bear image is the most challenging case because it contains several overlapping animals.
+The final tuned setting keeps five detections for five visible bears without adding an extra phantom detection.
 
-The pipeline works well on clear objects and multi-object prompts. Crowded scenes remain challenging because Grounding DINO can produce duplicate or overlapping boxes, and NMS can suppress nearby valid detections.
-
-The weak prompt case illustrates that open-vocabulary detection is sensitive to prompt wording.
+The bus/person and weak-prompt cases intentionally use the same image to isolate prompt sensitivity.
